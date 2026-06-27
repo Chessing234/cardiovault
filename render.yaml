@@ -1,0 +1,17 @@
+# CardioVault Render Blueprint — ML inference API
+# Validate: render blueprints validate ./render.yaml
+# Deploy via Render Dashboard: New > Blueprint > connect repo, or CLI service create.
+
+services:
+  - type: web
+    name: cardiovault-ml
+    runtime: python
+    plan: free
+    region: oregon
+    rootDir: packages/ml
+    buildCommand: pip install -r requirements-api.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"

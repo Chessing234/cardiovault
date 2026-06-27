@@ -1,0 +1,9 @@
+{
+  "name": "ml",
+  "version": "0.0.1",
+  "private": true,
+  "description": "CardioVault ML pipeline (Byte2Beat / Kaggle)",
+  "scripts": {
+    "test": "node -e \"console.log('ml: run training/eval from Python when tests are added');\""
+  }
+}

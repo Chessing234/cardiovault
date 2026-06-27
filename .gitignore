@@ -1,0 +1,27 @@
+node_modules/
+.env
+.env.local
+.next/
+out/
+cache/
+artifacts/
+typechain-types/
+*.log
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.pt
+*.pth
+*.onnx
+*.zkey
+!packages/web/public/zk/*.zkey (browser copies live under public/zk; do not commit unless you intend to)
+packages/contracts/circuits/build/**/*.wasm
+!packages/web/public/zk/*.wasm
+packages/contracts/circuits/build/*
+!packages/contracts/circuits/build/.gitkeep
+!packages/contracts/circuits/build/verification_key.json
+packages/contracts/pot*.ptau
+packages/contracts/HealthProof_*.zkey
+packages/ml/data/
+packages/web/data/
+.vercel
