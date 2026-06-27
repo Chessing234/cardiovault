@@ -2,63 +2,52 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from flask import Flask, jsonify, request
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-
-app = FastAPI(title="CardioVault ML API", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = Flask(__name__)
 
 
-class Vitals(BaseModel):
-    age: int = Field(ge=18, le=120)
-    systolicBP: int = Field(ge=70, le=250)
-    diastolicBP: int = Field(default=80, ge=40, le=150)
-    cholesterol: int = Field(default=200, ge=100, le=600)
-    hdl: int = Field(default=50, ge=10, le=200)
-    ldl: int = Field(default=130, ge=20, le=400)
-    bmi: int = Field(default=240, ge=100, le=601, description="BMI × 10")
-    isSmoker: Literal[0, 1] = 0
-    isDiabetic: Literal[0, 1] = 0
-    hasFamilyHistory: Literal[0, 1] = 0
+def compute_risk(vitals: dict) -> tuple[int, float]:
+    age = int(vitals.get("age", 45))
+    systolic_bp = int(vitals.get("systolicBP", 120))
+    cholesterol = int(vitals.get("cholesterol", 200))
+    hdl = int(vitals.get("hdl", 50))
+    ldl = int(vitals.get("ldl", 130))
+    bmi = int(vitals.get("bmi", 240))
+    is_smoker = int(vitals.get("isSmoker", 0))
+    is_diabetic = int(vitals.get("isDiabetic", 0))
+    has_family_history = int(vitals.get("hasFamilyHistory", 0))
 
-
-def compute_risk(v: Vitals) -> tuple[int, float]:
     risk_lin = (
-        v.age * 2
-        + v.systolicBP * 3
-        + v.cholesterol
-        + v.ldl
-        + v.bmi * 2
-        + v.isSmoker * 500
-        + v.isDiabetic * 300
-        + v.hasFamilyHistory * 200
+        age * 2
+        + systolic_bp * 3
+        + cholesterol
+        + ldl
+        + bmi * 2
+        + is_smoker * 500
+        + is_diabetic * 300
+        + has_family_history * 200
     )
-    risk = risk_lin - v.hdl * 2
+    risk = risk_lin - hdl * 2
     risk_score_int = risk // 100
     risk_percent = round(risk / 100, 1)
     return risk_score_int, risk_percent
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok", "service": "cardiovault-ml"}
+def health():
+    return jsonify({"status": "ok", "service": "cardiovault-ml"})
 
 
 @app.post("/api/ml/predict")
-def predict(vitals: Vitals) -> dict[str, object]:
+def predict():
+    vitals = request.get_json(silent=True) or {}
     risk_score_int, risk_percent = compute_risk(vitals)
-    return {
-        "modelVersion": "framingham-zk-v1",
-        "riskScoreInt": risk_score_int,
-        "riskPercent": risk_percent,
-        "vitals": vitals.model_dump(),
-    }
+    return jsonify(
+        {
+            "modelVersion": "framingham-zk-v1",
+            "riskScoreInt": risk_score_int,
+            "riskPercent": risk_percent,
+            "vitals": vitals,
+        }
+    )

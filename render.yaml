@@ -10,7 +10,7 @@ services:
     region: oregon
     rootDir: packages/ml
     buildCommand: pip install -r requirements-api.txt
-    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    startCommand: gunicorn api.main:app --bind 0.0.0.0:$PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
